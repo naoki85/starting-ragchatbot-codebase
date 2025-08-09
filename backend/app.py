@@ -40,10 +40,19 @@ class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
 
+class NewChatRequest(BaseModel):
+    """Request model for new chat session"""
+    session_id: Optional[str] = None
+
+class SourceItem(BaseModel):
+    """Model for source information with optional link"""
+    text: str
+    link: Optional[str] = None
+
 class QueryResponse(BaseModel):
     """Response model for course queries"""
     answer: str
-    sources: List[str]
+    sources: List[SourceItem]
     session_id: str
 
 class CourseStats(BaseModel):
@@ -82,6 +91,17 @@ async def get_course_stats():
             total_courses=analytics["total_courses"],
             course_titles=analytics["course_titles"]
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/new-chat")
+async def new_chat(request: NewChatRequest):
+    """Clear session history and start a new chat"""
+    try:
+        if request.session_id:
+            rag_system.session_manager.clear_session(request.session_id)
+        
+        return {"status": "success", "message": "Session cleared"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
