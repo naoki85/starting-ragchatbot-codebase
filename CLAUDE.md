@@ -108,3 +108,46 @@ Lesson 1: [next lesson title]
 - Asynchronous query handling with loading states
 - always use uv to run the server do not use pip directory
 - use uv to run Python files
+
+## Code Quality Tools
+
+**Development dependencies:**
+```bash
+uv sync --group dev  # Install development dependencies (Black, flake8, isort, mypy)
+```
+
+**Code formatting:**
+```bash
+# Format all Python files with Black
+uv run black backend/ main.py
+
+# Sort imports with isort
+uv run isort backend/ main.py
+
+# Run complete formatting pipeline
+./scripts/format.sh
+```
+
+**Code linting and type checking:**
+```bash
+# Run flake8 linting
+uv run flake8 backend/ main.py
+
+# Run mypy type checking
+uv run mypy backend/ main.py
+
+# Run complete linting pipeline
+./scripts/lint.sh
+```
+
+**Complete quality pipeline:**
+```bash
+# Run formatting, linting, and tests
+./scripts/quality.sh
+```
+
+**Quality tool configuration:**
+- **Black:** Line length 88, Python 3.13 target
+- **isort:** Black-compatible profile, line length 88
+- **mypy:** Strict type checking with third-party ignores for chromadb and sentence-transformers
+- **flake8:** Compatible with Black formatting
