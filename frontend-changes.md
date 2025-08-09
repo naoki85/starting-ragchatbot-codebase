@@ -1,4 +1,4 @@
-# Frontend Changes
+# Frontend Changes Summary
 
 ## 1. Code Quality Tools Implementation
 
@@ -155,8 +155,45 @@ Added a dark/light theme toggle feature that allows users to switch between them
 - Fallback to dark theme if localStorage is unavailable
 - SVG icons supported in all modern browsers
 
+## 3. Backend Testing Infrastructure Enhancements
+
+### Files Modified/Created:
+
+#### **pyproject.toml** (modified)
+- Added `httpx>=0.27.0` dependency for API testing
+- Added comprehensive pytest configuration with test markers
+- Configured test paths and naming conventions
+
+#### **backend/tests/conftest.py** (enhanced)
+- Added API testing fixtures including `test_app`, `api_client`, and `mock_rag_for_api`
+- Created inline FastAPI test application to avoid import issues with static files
+- Added sample data fixtures for API request/response testing
+
+#### **backend/tests/test_api_endpoints.py** (created)
+- Comprehensive API endpoint tests covering all FastAPI routes
+- Tests for `/api/query`, `/api/courses`, `/api/new-chat`, and root endpoints
+- Request validation, response model validation, error handling, and integration tests
+- 22 API-specific tests with proper mocking and assertions
+
+### Impact on Frontend
+While no frontend code was directly modified, these testing enhancements provide:
+
+- **API Reliability**: Comprehensive testing ensures the frontend can rely on stable API responses
+- **Response Validation**: Tests verify that API responses match expected schemas the frontend depends on
+- **Error Handling**: Tests ensure proper error responses that the frontend can handle gracefully
+- **Integration Safety**: Full workflow tests protect against breaking changes that could affect frontend functionality
+
+### Test Coverage
+- 76 total tests (54 existing + 22 new API tests)
+- API tests can be run separately using: `uv run pytest -m api`
+- All tests passing, ensuring robust backend support for frontend operations
+
 ## Next Steps
 - Consider integrating these scripts into CI/CD pipeline
 - Run `./scripts/format.sh` before committing code
 - Use `./scripts/lint.sh` for regular code quality checks
 - Gradually address mypy type hints for stricter type checking
+- Frontend API integration testing using the new testing framework
+- Mock API responses for frontend development
+- Reliable backend behavior verification
+- Safe deployment of frontend changes

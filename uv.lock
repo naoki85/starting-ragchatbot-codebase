@@ -1722,6 +1722,7 @@ dependencies = [
 dev = [
     { name = "black" },
     { name = "flake8" },
+    { name = "httpx" },
     { name = "isort" },
     { name = "mypy" },
     { name = "pytest" },
@@ -1742,6 +1743,7 @@ requires-dist = [
 dev = [
     { name = "black", specifier = ">=24.0.0" },
     { name = "flake8", specifier = ">=7.0.0" },
+    { name = "httpx", specifier = ">=0.27.0" },
     { name = "isort", specifier = ">=5.13.0" },
     { name = "mypy", specifier = ">=1.8.0" },
     { name = "pytest", specifier = ">=8.4.1" },
