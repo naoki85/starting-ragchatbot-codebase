@@ -241,3 +241,153 @@ def error_search_results():
         distances=[],
         error="Database connection failed"
     )
+
+
+# API Testing Fixtures
+@pytest.fixture
+def test_app():
+    """Create test FastAPI app without static file mounting to avoid import issues"""
+    from fastapi import FastAPI, HTTPException
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.middleware.trustedhost import TrustedHostMiddleware
+    from pydantic import BaseModel
+    from typing import List, Optional
+    
+    # Create test app
+    app = FastAPI(title="Course Materials RAG System", root_path="")
+    
+    # Add middleware (same as production)
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["*"]
+    )
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+    
+    # Define Pydantic models (same as production)
+    class QueryRequest(BaseModel):
+        query: str
+        session_id: Optional[str] = None
+
+    class NewChatRequest(BaseModel):
+        session_id: Optional[str] = None
+
+    class SourceItem(BaseModel):
+        text: str
+        link: Optional[str] = None
+
+    class QueryResponse(BaseModel):
+        answer: str
+        sources: List[SourceItem]
+        session_id: str
+
+    class CourseStats(BaseModel):
+        total_courses: int
+        course_titles: List[str]
+    
+    # Mock RAG system for testing
+    mock_rag_system = Mock()
+    
+    # Define endpoints inline to avoid import issues
+    @app.post("/api/query", response_model=QueryResponse)
+    async def query_documents(request: QueryRequest):
+        try:
+            session_id = request.session_id or "test_session_id"
+            
+            # Mock response based on query
+            if "error" in request.query.lower():
+                raise Exception("Test error")
+            
+            answer, sources = mock_rag_system.query(request.query, session_id)
+            
+            return QueryResponse(
+                answer=answer,
+                sources=sources,
+                session_id=session_id
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/api/courses", response_model=CourseStats)
+    async def get_course_stats():
+        try:
+            analytics = mock_rag_system.get_course_analytics()
+            return CourseStats(
+                total_courses=analytics["total_courses"],
+                course_titles=analytics["course_titles"]
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/api/new-chat")
+    async def new_chat(request: NewChatRequest):
+        try:
+            if request.session_id:
+                mock_rag_system.session_manager.clear_session(request.session_id)
+            
+            return {"status": "success", "message": "Session cleared"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/")
+    async def root():
+        return {"message": "Course Materials RAG System"}
+    
+    # Store mock for test access
+    app.state.mock_rag_system = mock_rag_system
+    
+    return app
+
+
+@pytest.fixture
+def api_client(test_app):
+    """Create test client for API testing"""
+    from fastapi.testclient import TestClient
+    return TestClient(test_app)
+
+
+@pytest.fixture
+def mock_rag_for_api(test_app):
+    """Get the mock RAG system from test app for setup in API tests"""
+    return test_app.state.mock_rag_system
+
+
+@pytest.fixture
+def sample_query_request():
+    """Sample query request for API testing"""
+    return {
+        "query": "What is MCP?",
+        "session_id": "test_session_123"
+    }
+
+
+@pytest.fixture
+def sample_query_response():
+    """Sample query response for API testing"""
+    return {
+        "answer": "MCP stands for Model Context Protocol.",
+        "sources": [
+            {"text": "Introduction to MCP - Lesson 1", "link": "https://example.com/lesson1"}
+        ],
+        "session_id": "test_session_123"
+    }
+
+
+@pytest.fixture
+def sample_course_analytics():
+    """Sample course analytics for API testing"""
+    return {
+        "total_courses": 3,
+        "course_titles": [
+            "Introduction to MCP",
+            "Advanced Python",
+            "API Design"
+        ]
+    }
